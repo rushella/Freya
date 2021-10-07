@@ -6,14 +6,14 @@ namespace Freya.Bot
     {
         public string DiscordBotToken { get; }
 
-        private Settings()
+        private BotSettings()
         {
-            DiscordBotToken = Environment.GetEnvironmentVariable("FREYA_DISCORDBOT_TOKEN");
+            DiscordBotToken = Environment.GetEnvironmentVariable("FREYA_DISCORDBOT_TOKEN", EnvironmentVariableTarget.User);
         }
 
-        public static BotSettings Initialize()
+        public static BotSettings Load()
         {
-            return new Settings();
+            return new BotSettings();
         }
     }
 }

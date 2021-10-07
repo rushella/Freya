@@ -1,10 +1,11 @@
 using System.Collections.Generic;
-using Freya.Bot.Models;
+using DSharpPlus.Entities;
 
-namespace Freya.Bot.Data
+namespace Freya.Bot.Models
 {
     public class Playlist
     {
         public List<AudioInfo> Audios { get; set; }
+        public DiscordUser CreatedBy { get; set; }
     }
 }

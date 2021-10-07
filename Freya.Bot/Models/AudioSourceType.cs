@@ -1,7 +1,7 @@
 namespace Freya.Bot.Models
 {
-    public class AudioSourceType
+    public enum AudioSourceType
     {
-        
+        YouTube
     }
 }
