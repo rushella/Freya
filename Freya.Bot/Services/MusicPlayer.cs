@@ -10,7 +10,7 @@ namespace Freya.Bot.Services
     public class MusicPlayer
     {
         private readonly List<LavalinkTrack> _internalQueue;
-        private LavalinkGuildConnection _lavaGuildConnection;
+        private LavalinkGuildConnection _conn;
 
         public IReadOnlyList<LavalinkTrack> Queue => _internalQueue.AsReadOnly();
         public int CurrentAudioPosition { get; private set; }
@@ -22,59 +22,67 @@ namespace Freya.Bot.Services
             _internalQueue = new List<LavalinkTrack>();
         }
         
-        public async Task Connect(LavalinkNodeConnection lava, DiscordChannel channel)
+        public async Task Connect(LavalinkNodeConnection node, DiscordChannel channel)
         {
-            _lavaGuildConnection = await lava.ConnectAsync(channel);
-            _lavaGuildConnection.PlaybackFinished += async (conn, args) => await PlayNext();
+            CurrentAudioPosition = -1;
+            _conn = await node.ConnectAsync(channel);
+            _conn.PlaybackFinished += async (conn, args) =>
+            {
+                Dequeue(0);
+            
+                if (_internalQueue.Count == 0)
+                {
+                    CurrentAudioPosition = -1;
+                    QueueEnded?.Invoke(this, new AsyncEventArgs());
+                    return;
+                }
+            
+                var track = _internalQueue[CurrentAudioPosition];
+            
+                await _conn.PlayAsync(track);
+            };
         }
 
         public async Task Disconnect()
         {
-            await _lavaGuildConnection.StopAsync();
-            await _lavaGuildConnection.DisconnectAsync();
+            await _conn.StopAsync();
+            await _conn.DisconnectAsync();
         }
         
-        public async Task Play()
+        public async Task Play(LavalinkTrack track = null)
         {
-            if (!_internalQueue.Any())
+            if (track != null)
             {
-                return;
+                Enqueue(track);
             }
             
-            var track = _internalQueue[CurrentAudioPosition];
-            
-            await _lavaGuildConnection.PlayAsync(track);
+            if (_internalQueue.Any() && CurrentAudioPosition == -1)
+            {
+                CurrentAudioPosition = 0;
+                var nextTrack = _internalQueue[CurrentAudioPosition];
+                await _conn.PlayAsync(nextTrack);
+            }
         }
 
         public async Task Pause()
         {
-            await _lavaGuildConnection.PauseAsync();
+            await _conn.PauseAsync();
         }
 
         public async Task Stop()
         {
-            await _lavaGuildConnection.StopAsync();
-            
+            await _conn.StopAsync();
+            _internalQueue.Clear();
         }
 
         public async Task Resume()
         {
-            await _lavaGuildConnection.ResumeAsync();
+            await _conn.ResumeAsync();
         }
         
         public async Task PlayNext()
         {
-            Dequeue(0);
-            
-            if (_internalQueue.Count == 0)
-            {
-                QueueEnded?.Invoke(this, new AsyncEventArgs());
-                return;
-            }
-            
-            var track = _internalQueue[CurrentAudioPosition];
-            
-            await _lavaGuildConnection.PlayAsync(track);
+            await _conn.StopAsync();
         }
 
         public void Enqueue(LavalinkTrack track)

@@ -7,6 +7,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Lavalink;
 using DSharpPlus.Net;
 using Freya.Bot.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -25,6 +26,7 @@ namespace Freya.Bot
 
             var discord = services.GetRequiredService<DiscordClient>();
             var lavaConfig = services.GetRequiredService<LavalinkConfiguration>();
+            var botConfig = services.GetRequiredService<IConfiguration>();
 
             var lava = discord.UseLavalink();
             
@@ -34,7 +36,7 @@ namespace Freya.Bot
             var commands = discord.UseCommandsNext(new CommandsNextConfiguration()
             {
                 Services = services,
-                StringPrefixes = new []{"$$"}
+                StringPrefixes = new []{ botConfig["prefix"] }
             });
             
             commands.RegisterCommands(Assembly.GetExecutingAssembly());
@@ -56,9 +58,13 @@ namespace Freya.Bot
                 RestEndpoint = endpoint,
                 SocketEndpoint = endpoint
             };
+
+            var botConfig = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json").Build();
             
             var botSettings = BotSettings.Load();
             var serviceProvider = new ServiceCollection()
+                .AddSingleton<IConfiguration>(botConfig)
                 .AddSingleton(new DiscordClient(
                     new DiscordConfiguration 
                     {
@@ -67,6 +73,7 @@ namespace Freya.Bot
                         MinimumLogLevel = LogLevel.Debug
                     }))
                 .AddSingleton(lavaConfig)
+                .AddSingleton<MusicSearchService>()
                 .AddSingleton<MusicCluster>()
                 .BuildServiceProvider();
 
