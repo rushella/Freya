@@ -94,5 +94,32 @@ namespace Freya.Bot.Services
         {
             _internalQueue.RemoveAt(trackPosition);
         }
+
+        public void BassBoost()
+        {
+            _conn.AdjustEqualizerAsync(new[]
+            {
+                new LavalinkBandAdjustment(0,  1),
+                new LavalinkBandAdjustment(1,  1),
+                new LavalinkBandAdjustment(2,  1),
+                new LavalinkBandAdjustment(3,  1),
+                new LavalinkBandAdjustment(4,  1),
+                new LavalinkBandAdjustment(5,  1),
+                new LavalinkBandAdjustment(6,  1),
+                new LavalinkBandAdjustment(7,  1),
+                new LavalinkBandAdjustment(8,  1),
+                new LavalinkBandAdjustment(9,  1),
+                new LavalinkBandAdjustment(10, 1),
+                new LavalinkBandAdjustment(11, 1),
+                new LavalinkBandAdjustment(12, 1),
+                new LavalinkBandAdjustment(13, 1),
+                new LavalinkBandAdjustment(14, 1),
+            });
+        }
+        
+        public void NoBassBoost()
+        {
+            _conn.ResetEqualizerAsync();
+        }
     }
 }

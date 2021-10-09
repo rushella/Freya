@@ -90,13 +90,36 @@ namespace Freya.Bot.Commands
             for (var i = 0; i < player.Queue.Count; i++)
             {
                 var track = player.Queue[i];
-                
-                description.Append($"[{i + 1}] {track.Author} - {track.Title}\n");
+
+                if (i == 0)
+                {
+                    description.Append($"[>>>] {track.Author} - {track.Title}\n");
+                }
+                else
+                {
+                    description.Append($"[{i + 1:0000}] {track.Author} - {track.Title}\n");
+                }
             }
             
             var embed = new DiscordEmbedBuilder().WithDescription(description.ToString()).Build();
 
             await ctx.RespondAsync(embed);
+        }
+        
+        [Command, Aliases("bb")]
+        public async Task BassBoost(CommandContext ctx)
+        {
+            var player = await _musicCluster.GetOrRegisterPlayer(ctx.Guild.Id);
+
+            player.BassBoost();
+        }
+        
+        [Command, Aliases("nbb")]
+        public async Task NoBassBoost(CommandContext ctx)
+        {
+            var player = await _musicCluster.GetOrRegisterPlayer(ctx.Guild.Id);
+
+            player.NoBassBoost();
         }
     }
 }
