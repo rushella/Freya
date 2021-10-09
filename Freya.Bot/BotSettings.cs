@@ -8,7 +8,7 @@ namespace Freya.Bot
 
         private BotSettings()
         {
-            DiscordBotToken = Environment.GetEnvironmentVariable("FREYA_DISCORDBOT_TOKEN", EnvironmentVariableTarget.User);
+            DiscordBotToken = Environment.GetEnvironmentVariable("FREYA_DISCORDBOT_TOKEN");
         }
 
         public static BotSettings Load()
